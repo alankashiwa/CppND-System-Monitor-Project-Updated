@@ -128,14 +128,14 @@ float LinuxParser::CpuUtilization(int pid) {
   string line;
   string value;
   enum ParameterPosition {
-    utime_no = 13,     // #14
-    stime_no = 14,     // #15
-    cutime_no = 15,    // #16
-    cstime_no = 16,    // #17
-    starttime_no = 21  // #22
+    utime_no = 14,
+    stime_no = 15,
+    cutime_no = 16,
+    cstime_no = 17,
+    starttime_no = 22
   };
   long uptime, utime, stime, cutime, cstime, starttime;
-  uptime = UpTime(pid);
+  uptime = UpTime();
 
   std::ifstream filestream(kProcDirectory + pid_dir + kStatFilename);
   if (filestream.is_open()) {
