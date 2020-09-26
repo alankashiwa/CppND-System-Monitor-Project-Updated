@@ -99,19 +99,6 @@ long LinuxParser::UpTime() {
   return stol(up_time);
 }
 
-// Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
-
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
 // Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() {
   string line;
@@ -132,6 +119,55 @@ vector<string> LinuxParser::CpuUtilization() {
   return cpu_utilization;
 }
 
+/*
+  [Ref]
+  https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+*/
+float LinuxParser::CpuUtilization(int pid) {
+  string pid_dir = "/" + to_string(pid);
+  string line;
+  string value;
+  enum ParameterPosition {
+    utime_no = 13,     // #14
+    stime_no = 14,     // #15
+    cutime_no = 15,    // #16
+    cstime_no = 16,    // #17
+    starttime_no = 21  // #22
+  };
+  long uptime, utime, stime, cutime, cstime, starttime;
+  uptime = UpTime(pid);
+
+  std::ifstream filestream(kProcDirectory + pid_dir + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::stringstream linestream(line);
+    int count = 0;
+    while (linestream >> value) {
+      count += 1;
+      switch (count) {
+        case ParameterPosition::utime_no:
+          utime = stol(value) / sysconf(_SC_CLK_TCK);
+          break;
+        case ParameterPosition::stime_no:
+          stime = stol(value) / sysconf(_SC_CLK_TCK);
+          break;
+        case ParameterPosition::cutime_no:
+          cutime = stol(value) / sysconf(_SC_CLK_TCK);
+          break;
+        case ParameterPosition::cstime_no:
+          cstime = stol(value) / sysconf(_SC_CLK_TCK);
+          break;
+        case ParameterPosition::starttime_no:
+          starttime = stol(value) / sysconf(_SC_CLK_TCK);
+          break;
+      }
+    }
+  }
+  long total_time = utime + stime + cutime + cstime;
+  long seconds = uptime - starttime;
+  return (float)total_time / seconds;
+}
+
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string line;
@@ -145,6 +181,7 @@ int LinuxParser::TotalProcesses() {
       return std::stoi(value);
     }
   }
+  return 0;
 }
 
 // Read and return the number of running processes
@@ -160,6 +197,7 @@ int LinuxParser::RunningProcesses() {
       return std::stoi(value);
     }
   }
+  return 0;
 }
 
 // Read and return the command associated with a process
@@ -190,6 +228,7 @@ string LinuxParser::Ram(int pid) {
       }
     }
   }
+  return "0";
 }
 
 // Read and return the user ID associated with a process
@@ -208,6 +247,7 @@ string LinuxParser::Uid(int pid) {
       }
     }
   }
+  return "";
 }
 
 // Read and return the user associated with a process
@@ -227,8 +267,27 @@ string LinuxParser::User(int pid) {
       }
     }
   }
+  return "";
 }
 
-// TODO: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+// Read and return the uptime of a process
+long LinuxParser::UpTime(int pid) {
+  string pid_dir = "/" + to_string(pid);
+  string line;
+  string value;
+  const int starttime_no = 22;
+  std::ifstream filestream(kProcDirectory + pid_dir + kStatFilename);
+  if (filestream.is_open()) {
+    std::getline(filestream, line);
+    std::stringstream linestream(line);
+    int count = 0;
+    while (linestream >> value) {
+      count += 1;
+      if (count == starttime_no) {
+        long clockticks = stol(value);
+        return clockticks / sysconf(_SC_CLK_TCK);
+      }
+    }
+  }
+  return 0;
+}

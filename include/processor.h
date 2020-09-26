@@ -12,7 +12,7 @@ class Processor {
   long CalculateNonIdle(vector<long>& utilization) const;
 
  private:
-  enum mode {
+  enum ParameterPosition {
     user = 0,
     nice,
     system,

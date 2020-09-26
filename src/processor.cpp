@@ -18,12 +18,16 @@ using std::vector;
     2. NonIdle = user + nice + system + irq + softirq + steal
 */
 long Processor::CalculateIdle(vector<long>& utilization) const {
-  return utilization[mode::idle] + utilization[mode::iowait];
+  return utilization[ParameterPosition::idle] +
+         utilization[ParameterPosition::iowait];
 }
 long Processor::CalculateNonIdle(vector<long>& utilization) const {
-  return utilization[mode::user] + utilization[mode::nice] +
-         utilization[mode::system] + utilization[mode::irq] +
-         utilization[mode::softirq] + utilization[steal];
+  return utilization[ParameterPosition::user] +
+         utilization[ParameterPosition::nice] +
+         utilization[ParameterPosition::system] +
+         utilization[ParameterPosition::irq] +
+         utilization[ParameterPosition::softirq] +
+         utilization[ParameterPosition::steal];
 }
 // Return the aggregate CPU utilizations
 float Processor::Utilization() {
