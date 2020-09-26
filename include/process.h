@@ -8,6 +8,7 @@ It contains relevant attributes as shown below
 */
 class Process {
  public:
+  Process(int id) : pid(id){};
   int Pid();
   std::string User();
   std::string Command();
@@ -16,8 +17,8 @@ class Process {
   long int UpTime();
   bool operator<(Process const& a) const;
 
-  // TODO: Declare any necessary private members
  private:
+  int pid;
 };
 
 #endif

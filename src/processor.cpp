@@ -29,8 +29,8 @@ long Processor::CalculateNonIdle(vector<long>& utilization) const {
 float Processor::Utilization() {
   vector<string> cpu_util_str = LinuxParser::CpuUtilization();
   vector<long> cpu_utilization;
-  for (auto it = cpu_util_str.begin(); it != cpu_util_str.end(); it++) {
-    cpu_utilization.push_back(stol(*it));
+  for (string util : cpu_util_str) {
+    cpu_utilization.push_back(stol(util));
   }
 
   long idle = CalculateIdle(cpu_utilization);
