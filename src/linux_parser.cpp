@@ -231,7 +231,7 @@ string LinuxParser::Ram(int pid) {
       linestream >> key;
       if (key == "VmSize:") {
         linestream >> value;
-        long mb = stol(value) / 1000;
+        long mb = stol(value) / 1024;
         return to_string(mb);
       }
     }
