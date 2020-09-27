@@ -136,11 +136,11 @@ float LinuxParser::CpuUtilization(int pid) {
     starttime_no = 22
   };
   long uptime = UpTime();
-  long utime;
-  long stime;
-  long cutime;
-  long cstime;
-  long starttime;
+  long utime = 0;
+  long stime = 0;
+  long cutime = 0;
+  long cstime = 0;
+  long starttime = 0;
 
   std::ifstream filestream(kProcDirectory + pid_dir + kStatFilename);
   if (filestream.is_open()) {
@@ -151,26 +151,27 @@ float LinuxParser::CpuUtilization(int pid) {
       count += 1;
       switch (count) {
         case ParameterPosition::utime_no:
-          utime = stol(value) / sysconf(_SC_CLK_TCK);
+          utime = stol(value);
           break;
         case ParameterPosition::stime_no:
-          stime = stol(value) / sysconf(_SC_CLK_TCK);
+          stime = stol(value);
           break;
         case ParameterPosition::cutime_no:
-          cutime = stol(value) / sysconf(_SC_CLK_TCK);
+          cutime = stol(value);
           break;
         case ParameterPosition::cstime_no:
-          cstime = stol(value) / sysconf(_SC_CLK_TCK);
+          cstime = stol(value);
           break;
         case ParameterPosition::starttime_no:
-          starttime = stol(value) / sysconf(_SC_CLK_TCK);
+          starttime = stol(value);
           break;
       }
     }
+    float total_time = utime + stime + cutime + cstime;
+    float seconds = uptime - (starttime / sysconf(_SC_CLK_TCK));
+    return (total_time / sysconf(_SC_CLK_TCK)) / seconds;
   }
-  long total_time = utime + stime + cutime + cstime;
-  long seconds = uptime - starttime;
-  return (float)total_time / seconds;
+  return 0.0;
 }
 
 // Read and return the total number of processes
