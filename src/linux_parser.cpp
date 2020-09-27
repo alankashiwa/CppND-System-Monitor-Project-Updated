@@ -69,7 +69,8 @@ vector<int> LinuxParser::Pids() {
 // Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() {
   string key, value;
-  float total_memory, free_memory;
+  float total_memory;
+  float free_memory;
   string line;
   std::ifstream filestream(kProcDirectory + kMeminfoFilename);
   if (filestream.is_open()) {
@@ -134,8 +135,12 @@ float LinuxParser::CpuUtilization(int pid) {
     cstime_no = 17,
     starttime_no = 22
   };
-  long uptime, utime, stime, cutime, cstime, starttime;
-  uptime = UpTime();
+  long uptime = UpTime();
+  long utime;
+  long stime;
+  long cutime;
+  long cstime;
+  long starttime;
 
   std::ifstream filestream(kProcDirectory + pid_dir + kStatFilename);
   if (filestream.is_open()) {
@@ -171,7 +176,8 @@ float LinuxParser::CpuUtilization(int pid) {
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string line;
-  string key, value;
+  string key;
+  string value;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   while (std::getline(filestream, line)) {
     std::stringstream linestream(line);
@@ -187,7 +193,8 @@ int LinuxParser::TotalProcesses() {
 // Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
   string line;
-  string key, value;
+  string key;
+  string value;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   while (std::getline(filestream, line)) {
     std::stringstream linestream(line);
@@ -215,7 +222,8 @@ string LinuxParser::Command(int pid) {
 string LinuxParser::Ram(int pid) {
   string pid_dir = "/" + to_string(pid);
   string line;
-  string key, value;
+  string key;
+  string value;
   std::ifstream filestream(kProcDirectory + pid_dir + kStatusFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
@@ -235,7 +243,8 @@ string LinuxParser::Ram(int pid) {
 string LinuxParser::Uid(int pid) {
   string pid_dir = "/" + to_string(pid);
   string line;
-  string key, value;
+  string key;
+  string value;
   std::ifstream filestream(kProcDirectory + pid_dir + kStatusFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
@@ -254,7 +263,9 @@ string LinuxParser::Uid(int pid) {
 string LinuxParser::User(int pid) {
   string uid = Uid(pid);
   string line;
-  string username, password, userid;
+  string username;
+  string password;
+  string userid;
   std::ifstream filestream(kPasswordPath);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
