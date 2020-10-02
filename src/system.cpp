@@ -25,6 +25,7 @@ Processor& System::Cpu() { return cpu_; }
 vector<Process>& System::Processes() {
   const vector<int>& pids = LinuxParser::Pids();
   set<int> checked_pids;
+  processes_.clear();
   for (int pid : pids) {
     if (checked_pids.find(pid) == checked_pids.end()) {
       // Not yet added
