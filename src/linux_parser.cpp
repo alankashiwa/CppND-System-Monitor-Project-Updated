@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -69,8 +70,8 @@ vector<int> LinuxParser::Pids() {
 // Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() {
   string key, value;
-  float total_memory;
-  float free_memory;
+  float total_memory{0.0};
+  float free_memory{0.0};
   string line;
   std::ifstream filestream(kProcDirectory + kMeminfoFilename);
   if (filestream.is_open()) {
@@ -84,6 +85,7 @@ float LinuxParser::MemoryUtilization() {
       }
     };
   }
+  if (total_memory == 0.0) return 0.0;
   return (total_memory - free_memory) / total_memory;
 }
 
@@ -230,14 +232,17 @@ string LinuxParser::Ram(int pid) {
     while (std::getline(filestream, line)) {
       std::stringstream linestream(line);
       linestream >> key;
-      if (key == "VmSize:") {
+      // https://man7.org/linux/man-pages/man5/proc.5.html
+      // Use "VmData" to get physical memory (instead of "VmSize" => virtual memory)
+      if (key == "VmData:") {
         linestream >> value;
         long mb = stol(value) / 1024;
         return to_string(mb);
       }
     }
   }
-  return "0";
+  // No data available
+  return nullptr;
 }
 
 // Read and return the user ID associated with a process
@@ -257,7 +262,8 @@ string LinuxParser::Uid(int pid) {
       }
     }
   }
-  return "";
+  // No data available
+  return nullptr;
 }
 
 // Read and return the user associated with a process
@@ -279,7 +285,8 @@ string LinuxParser::User(int pid) {
       }
     }
   }
-  return "";
+  // No data available
+  return nullptr;
 }
 
 // Read and return the uptime of a process
@@ -296,8 +303,8 @@ long LinuxParser::UpTime(int pid) {
     while (linestream >> value) {
       count += 1;
       if (count == starttime_no) {
-        long clockticks = stol(value);
-        return clockticks / sysconf(_SC_CLK_TCK);
+        long starttime = stol(value) / sysconf(_SC_CLK_TCK);
+        return UpTime() - starttime;
       }
     }
   }

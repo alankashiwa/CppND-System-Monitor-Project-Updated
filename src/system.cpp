@@ -24,9 +24,13 @@ Processor& System::Cpu() { return cpu_; }
 // Return a container composed of the system's processes
 vector<Process>& System::Processes() {
   const vector<int>& pids = LinuxParser::Pids();
+  set<int> checked_pids;
   for (int pid : pids) {
-    Process process(pid);
-    processes_.push_back(process);
+    if (checked_pids.find(pid) == checked_pids.end()) {
+      // Not yet added
+      processes_.emplace_back(pid);
+      checked_pids.insert(pid);
+    }
   }
 
   sort(processes_.begin(), processes_.end());

@@ -22,7 +22,17 @@ float Process::CpuUtilization() const {
 }
 
 // Return the command that generated this process
-string Process::Command() { return LinuxParser::Command(pid); }
+string Process::Command() {
+  const int max_command_size = 40;
+  string dotdot = "...";
+  string command = LinuxParser::Command(pid);
+  // Limit output size to max_command_size + dotdot size
+  if (command.size() > (max_command_size + dotdot.size())) {
+    return command.substr(0, max_command_size) + dotdot;
+  } else {
+    return command;
+  }
+}
 
 // Return this process's memory utilization
 string Process::Ram() { return LinuxParser::Ram(pid); }
